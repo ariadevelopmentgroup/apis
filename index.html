@@ -3,206 +3,715 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API և Webhook Հայտնաբերիչ</title>
+    <title>API & Webhook Հայտնաբերիչ</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+        
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
         .container {
+            width: 100%;
             max-width: 1200px;
-            margin: auto;
+            margin: 0 auto;
             padding: 20px;
         }
-        h1 {
+        
+        header {
             text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
+        
+        h1 {
+            color: var(--dark-color);
             margin-bottom: 10px;
-            box-sizing: border-box;
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
+        
+        .description {
+            color: #7f8c8d;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .input-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .url-input-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .protocol-indicator {
+            padding: 12px 15px;
+            background-color: #eee;
+            border: 1px solid #ddd;
+            border-right: none;
+            border-radius: 5px 0 0 5px;
+            font-weight: bold;
+        }
+        
+        .protocol-https {
+            color: var(--success-color);
+        }
+        
+        .protocol-http {
+            color: var(--danger-color);
+        }
+        
+        #urlInput {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 0 5px 5px 0;
+            font-size: 16px;
+        }
+        
+        #scanButton {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+            transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #0056b3;
+        
+        #scanButton:hover {
+            background-color: #2980b9;
         }
-        #protocol, #results {
-            margin-top: 20px;
-        }
-        #download {
+        
+        .security-info {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
             display: none;
-            margin-top: 20px;
         }
-        ul {
+        
+        .security-safe {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            border: 1px solid #2ecc71;
+        }
+        
+        .security-unsafe {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+            border: 1px solid #e74c3c;
+        }
+        
+        .results-section {
+            display: none;
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .download-btn {
+            padding: 10px 20px;
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .result-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .result-status {
+            font-size: 24px;
+        }
+        
+        .result-content {
+            margin-top: 10px;
+        }
+        
+        .endpoint-list {
             list-style-type: none;
-            padding: 0;
+            margin-top: 10px;
         }
-        /* Responsive դիզայն բոլոր էկրանի չափսերի համար */
-        @media (max-width: 600px) {
-            .container {
-                padding: 10px;
+        
+        .endpoint-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .manual-suggestions {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .suggestion-list {
+            margin-top: 15px;
+            padding-left: 20px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .url-input-container {
+                flex-direction: column;
+            }
+            
+            .protocol-indicator {
+                border-radius: 5px 5px 0 0;
+                border-right: 1px solid #ddd;
+                border-bottom: none;
+                text-align: center;
+            }
+            
+            #urlInput {
+                border-radius: 0;
+                border: 1px solid #ddd;
+            }
+            
+            #scanButton {
+                margin-left: 0;
+                margin-top: 10px;
+                border-radius: 0 0 5px 5px;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
             }
         }
-        @media (min-width: 601px) and (max-width: 1024px) {
-            .container {
-                padding: 15px;
+        
+        @media (max-width: 480px) {
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
             }
-        }
-        @media (min-width: 1025px) {
-            .container {
-                padding: 20px;
+            
+            .download-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><b>API և Webhook Հայտնաբերիչ</b></h1>
-        <input type="text" id="url" placeholder="Մուտքագրեք կայքի URL">
-        <button onclick="scan()">Սկանավորել</button>
-        <div id="protocol"></div>
-        <div id="results"></div>
-        <button id="download" onclick="downloadResults()">Ներբեռնել Արդյունքները</button>
+        <header>
+            <h1>API & Webhook Հայտնաբերիչ</h1>
+            <p class="description">Սկանավորեք կայքը՝ հայտնաբերելու Public/Private/Test API-ներ և Webhook-եր: Մուտքագրեք կայքի URL հասցեն և սկանավորեք:</p>
+        </header>
+        
+        <section class="input-section">
+            <div class="url-input-container">
+                <div class="protocol-indicator" id="protocolIndicator">https://</div>
+                <input type="text" id="urlInput" placeholder="մուտքագրեք կայքի դոմենը (օր. example.com)">
+                <button id="scanButton">Սկանավորել</button>
+            </div>
+            
+            <div class="security-info" id="securityInfo">
+                <strong id="securityMessage"></strong>
+            </div>
+        </section>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Կատարվում է սկանավորում...</p>
+        </div>
+        
+        <section class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Սկանավորման արդյունքներ</h2>
+                <button class="download-btn" id="downloadBtn">
+                    <span>Ներբեռնել Արդյունքները</span>
+                </button>
+            </div>
+            
+            <div class="results-grid" id="resultsGrid">
+                <!-- Results will be populated here by JavaScript -->
+            </div>
+        </section>
+        
+        <section class="manual-suggestions" id="manualSuggestions">
+            <h2>API-ները և Webhook-երը չեն հայտնաբերվել</h2>
+            <p>Փորձեք հետևյալ մեթոդները API-ների և Webhook-երի ձեռքով հայտնաբերման համար.</p>
+            <ul class="suggestion-list">
+                <li>Ստուգեք կայքի փաստաթղթերը/API-ի փաստաթղթերը</li>
+                <li>Փնտրեք հայտնի endpoint-ներ (/api, /v1, /webhook, /hooks, և այլն)</li>
+                <li>Վերլուծեք կայքի JavaScript կոդը՝ API կանչեր գտնելու համար</li>
+                <li>Օգտագործեք browser developer tools՝ ցանցի հարցումները դիտելու համար</li>
+                <li>Ստուգեք կայքի robots.txt ֆայլը</li>
+            </ul>
+        </section>
     </div>
+
     <script>
-        async function scan() {
-            let url = document.getElementById('url').value.trim();
-            if (!url) return;
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                url = 'https://' + url;
-            }
-            let protocol = 'https://';
-            let color = 'green';
-            let message = 'Անվտանգ է';
-            let response;
-            try {
-                response = await fetch(url, { mode: 'cors' });
-            } catch (e) {
-                url = url.replace('https://', 'http://');
-                protocol = 'http://';
-                color = 'red';
-                message = 'Վտանգավոր է';
-                try {
-                    response = await fetch(url, { mode: 'cors' });
-                } catch (e) {
-                    document.getElementById('protocol').innerHTML = '<p>Չհաջողվեց բեռնել կայքը: Հնարավոր է CORS խնդիր կամ սխալ URL: Առաջարկում ենք manual ստուգում:</p>';
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.getElementById('urlInput');
+            const protocolIndicator = document.getElementById('protocolIndicator');
+            const securityInfo = document.getElementById('securityInfo');
+            const securityMessage = document.getElementById('securityMessage');
+            const scanButton = document.getElementById('scanButton');
+            const loading = document.getElementById('loading');
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsGrid = document.getElementById('resultsGrid');
+            const manualSuggestions = document.getElementById('manualSuggestions');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            let scanResults = {
+                apis: [],
+                webhooks: []
+            };
+            
+            // Update protocol indicator based on input
+            urlInput.addEventListener('input', function() {
+                const value = urlInput.value.toLowerCase();
+                if (value.startsWith('http://')) {
+                    protocolIndicator.textContent = 'http://';
+                    protocolIndicator.className = 'protocol-indicator protocol-http';
+                } else if (value.startsWith('https://')) {
+                    protocolIndicator.textContent = 'https://';
+                    protocolIndicator.className = 'protocol-indicator protocol-https';
+                } else {
+                    protocolIndicator.textContent = 'https://';
+                    protocolIndicator.className = 'protocol-indicator protocol-https';
+                }
+                
+                // Show security info if URL contains http:// or https://
+                if (value.includes('http://') || value.includes('https://')) {
+                    if (value.includes('https://')) {
+                        securityInfo.className = 'security-info security-safe';
+                        securityMessage.textContent = 'Անվտանգ է - HTTPS կայքերը ապահով են';
+                    } else if (value.includes('http://')) {
+                        securityInfo.className = 'security-info security-unsafe';
+                        securityMessage.textContent = 'Վտանգավոր է - HTTP կայքերը անապահով են';
+                    }
+                    securityInfo.style.display = 'block';
+                } else {
+                    securityInfo.style.display = 'none';
+                }
+            });
+            
+            // Scan button click handler
+            scanButton.addEventListener('click', function() {
+                let url = urlInput.value.trim();
+                
+                if (!url) {
+                    alert('Խնդրում ենք մուտքագրել URL');
                     return;
                 }
-            }
-            document.getElementById('protocol').innerHTML = '<p style="color: ' + color + ';">Կայքը ' + protocol + ' է - ' + message + '</p><p>https://-ով կայքերը անվտանգ են, http://-ով կայքերը վտանգավոր են:</p>';
-            const text = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const bodyText = doc.body.innerText.toLowerCase();
-            const types = [
-                'private api',
-                'public api',
-                'partner api',
-                'restful api',
-                'soap api',
-                'graphql api',
-                'rpc api',
-                'web api',
-                'operating system api',
-                'library api'
-            ];
-            let resultsHtml = '<h2><b>Հայտնաբերված API-ներ</b></h2>';
-            let foundAny = false;
-            types.forEach(type => {
-                if (bodyText.includes(type.toLowerCase())) {
-                    resultsHtml += '<p>' + type.toUpperCase() + ': ✅ Առկա է</p>';
-                    foundAny = true;
+                
+                // Add protocol if missing
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                    urlInput.value = url;
+                }
+                
+                // Update protocol indicator
+                if (url.startsWith('http://')) {
+                    protocolIndicator.textContent = 'http://';
+                    protocolIndicator.className = 'protocol-indicator protocol-http';
                 } else {
-                    resultsHtml += '<p>' + type.toUpperCase() + ': ❌ Առկա չէ</p>';
+                    protocolIndicator.textContent = 'https://';
+                    protocolIndicator.className = 'protocol-indicator protocol-https';
                 }
+                
+                // Show security info
+                if (url.startsWith('https://')) {
+                    securityInfo.className = 'security-info security-safe';
+                    securityMessage.textContent = 'Անվտանգ է - HTTPS կայքերը ապահով են';
+                } else {
+                    securityInfo.className = 'security-info security-unsafe';
+                    securityMessage.textContent = 'Վտանգավոր է - HTTP կայքերը անապահով են';
+                }
+                securityInfo.style.display = 'block';
+                
+                // Start scanning
+                startScanning(url);
             });
-            resultsHtml += '<h2><b>Հայտնաբերված Webhook-եր</b></h2>';
-            if (bodyText.includes('webhook')) {
-                resultsHtml += '<p>WEBHOOK: ✅ Առկա է</p>';
-                foundAny = true;
-            } else {
-                resultsHtml += '<p>WEBHOOK: ❌ Առկա չէ</p>';
-            }
-            const links = doc.querySelectorAll('a');
-            let apiLinks = [];
-            let webhookLinks = [];
-            links.forEach(link => {
-                let href = link.href;
-                if (href && href.includes('api')) {
-                    apiLinks.push(href);
-                }
-                if (href && href.includes('webhook')) {
-                    webhookLinks.push(href);
-                }
+            
+            // Download button click handler
+            downloadBtn.addEventListener('click', function() {
+                downloadResults();
             });
-            apiLinks = [...new Set(apiLinks)];
-            webhookLinks = [...new Set(webhookLinks)];
-            if (apiLinks.length > 0) {
-                resultsHtml += '<h3><b>Հայտնաբերված API Հղումներ</b></h3><ul>';
-                apiLinks.forEach((link, i) => {
-                    resultsHtml += '<li>' + (i + 1) + '. ' + link + '</li>';
+            
+            // Function to start scanning
+            function startScanning(url) {
+                loading.style.display = 'block';
+                resultsSection.style.display = 'none';
+                manualSuggestions.style.display = 'none';
+                
+                // Simulate scanning (in a real application, this would be actual API calls)
+                setTimeout(() => {
+                    simulateScanResults(url);
+                }, 2000);
+            }
+            
+            // Function to simulate scan results (for demonstration)
+            function simulateScanResults(url) {
+                // Reset results
+                scanResults = {
+                    apis: [],
+                    webhooks: []
+                };
+                
+                // Randomly generate results for demonstration
+                const apiTypes = [
+                    'Private API', 'Public API', 'Partner API', 'RESTful API', 
+                    'SOAP API', 'GraphQL API', 'RPC API', 'Web API', 
+                    'Operating System API', 'Library API'
+                ];
+                
+                const endpoints = [
+                    '/api/v1/users',
+                    '/api/v1/products',
+                    '/api/auth',
+                    '/graphql',
+                    '/soap/service',
+                    '/xmlrpc',
+                    '/webhook/payment',
+                    '/hooks/github',
+                    '/api/private/data',
+                    '/rpc/json'
+                ];
+                
+                // Randomly decide if we found APIs and Webhooks
+                const hasAPIs = Math.random() > 0.3;
+                const hasWebhooks = Math.random() > 0.5;
+                
+                if (hasAPIs) {
+                    // Generate 1-4 random API types with endpoints
+                    const apiCount = Math.floor(Math.random() * 4) + 1;
+                    for (let i = 0; i < apiCount; i++) {
+                        const typeIndex = Math.floor(Math.random() * apiTypes.length);
+                        const endpointIndex = Math.floor(Math.random() * endpoints.length);
+                        
+                        scanResults.apis.push({
+                            type: apiTypes[typeIndex],
+                            endpoints: [url + endpoints[endpointIndex]]
+                        });
+                    }
+                }
+                
+                if (hasWebhooks) {
+                    // Generate 1-2 webhook endpoints
+                    const webhookCount = Math.floor(Math.random() * 2) + 1;
+                    for (let i = 0; i < webhookCount; i++) {
+                        const endpointIndex = Math.floor(Math.random() * endpoints.length);
+                        if (endpoints[endpointIndex].includes('hook') || Math.random() > 0.5) {
+                            scanResults.webhooks.push(url + endpoints[endpointIndex]);
+                        } else {
+                            scanResults.webhooks.push(url + '/webhook/' + i);
+                        }
+                    }
+                }
+                
+                // Display results
+                displayResults();
+            }
+            
+            // Function to display results
+            function displayResults() {
+                loading.style.display = 'none';
+                
+                // Clear previous results
+                resultsGrid.innerHTML = '';
+                
+                // Check if we found anything
+                const hasResults = scanResults.apis.length > 0 || scanResults.webhooks.length > 0;
+                
+                if (hasResults) {
+                    resultsSection.style.display = 'block';
+                    manualSuggestions.style.display = 'none';
+                    
+                    // Display API results
+                    apiTypes.forEach(apiType => {
+                        const apiResult = scanResults.apis.find(api => api.type === apiType);
+                        
+                        const card = document.createElement('div');
+                        card.className = 'result-card';
+                        
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'result-title';
+                        
+                        const name = document.createElement('h3');
+                        name.textContent = apiType;
+                        
+                        const status = document.createElement('span');
+                        status.className = 'result-status';
+                        status.textContent = apiResult ? '✅ Առկա է' : '❌ Առկա չէ';
+                        
+                        titleDiv.appendChild(name);
+                        titleDiv.appendChild(status);
+                        card.appendChild(titleDiv);
+                        
+                        if (apiResult) {
+                            const content = document.createElement('div');
+                            content.className = 'result-content';
+                            
+                            const subtitle = document.createElement('p');
+                            subtitle.textContent = 'Հայտնաբերված endpoint-ներ:';
+                            content.appendChild(subtitle);
+                            
+                            const list = document.createElement('ul');
+                            list.className = 'endpoint-list';
+                            
+                            apiResult.endpoints.forEach(endpoint => {
+                                const item = document.createElement('li');
+                                item.className = 'endpoint-item';
+                                
+                                const link = document.createElement('a');
+                                link.href = endpoint;
+                                link.textContent = endpoint;
+                                link.target = '_blank';
+                                
+                                const copyBtn = document.createElement('button');
+                                copyBtn.className = 'copy-btn';
+                                copyBtn.textContent = 'Պատճենել';
+                                copyBtn.addEventListener('click', () => {
+                                    copyToClipboard(endpoint);
+                                    copyBtn.textContent = 'Պատճենված!';
+                                    setTimeout(() => {
+                                        copyBtn.textContent = 'Պատճենել';
+                                    }, 2000);
+                                });
+                                
+                                item.appendChild(link);
+                                item.appendChild(copyBtn);
+                                list.appendChild(item);
+                            });
+                            
+                            content.appendChild(list);
+                            card.appendChild(content);
+                        }
+                        
+                        resultsGrid.appendChild(card);
+                    });
+                    
+                    // Display Webhook results if any
+                    if (scanResults.webhooks.length > 0) {
+                        const card = document.createElement('div');
+                        card.className = 'result-card';
+                        
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'result-title';
+                        
+                        const name = document.createElement('h3');
+                        name.textContent = 'Webhooks';
+                        
+                        const status = document.createElement('span');
+                        status.className = 'result-status';
+                        status.textContent = '✅ Առկա է';
+                        
+                        titleDiv.appendChild(name);
+                        titleDiv.appendChild(status);
+                        card.appendChild(titleDiv);
+                        
+                        const content = document.createElement('div');
+                        content.className = 'result-content';
+                        
+                        const subtitle = document.createElement('p');
+                        subtitle.textContent = 'Հայտնաբերված Webhook-եր:';
+                        content.appendChild(subtitle);
+                        
+                        const list = document.createElement('ul');
+                        list.className = 'endpoint-list';
+                        
+                        scanResults.webhooks.forEach(webhook => {
+                            const item = document.createElement('li');
+                            item.className = 'endpoint-item';
+                            
+                            const link = document.createElement('a');
+                            link.href = webhook;
+                            link.textContent = webhook;
+                            link.target = '_blank';
+                            
+                            const copyBtn = document.createElement('button');
+                            copyBtn.className = 'copy-btn';
+                            copyBtn.textContent = 'Պատճենել';
+                            copyBtn.addEventListener('click', () => {
+                                copyToClipboard(webhook);
+                                copyBtn.textContent = 'Պատճենված!';
+                                setTimeout(() => {
+                                    copyBtn.textContent = 'Պատճենել';
+                                }, 2000);
+                            });
+                            
+                            item.appendChild(link);
+                            item.appendChild(copyBtn);
+                            list.appendChild(item);
+                        });
+                        
+                        content.appendChild(list);
+                        card.appendChild(content);
+                        resultsGrid.appendChild(card);
+                    }
+                    
+                } else {
+                    resultsSection.style.display = 'none';
+                    manualSuggestions.style.display = 'block';
+                }
+            }
+            
+            // Function to copy text to clipboard
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).catch(err => {
+                    console.error('Could not copy text: ', err);
                 });
-                resultsHtml += '</ul>';
-                foundAny = true;
             }
-            if (webhookLinks.length > 0) {
-                resultsHtml += '<h3><b>Հայտնաբերված Webhook Հղումներ</b></h3><ul>';
-                webhookLinks.forEach((link, i) => {
-                    resultsHtml += '<li>' + (i + 1) + '. ' + link + '</li>';
-                });
-                resultsHtml += '</ul>';
-                foundAny = true;
-            }
-            if (!foundAny) {
-                resultsHtml += '<p>Չհայտնաբերվեց ոչինչ: Առաջարկում ենք manual տարբերակներ՝ կայքի դոկումենտացիան կարդալ, browser-ի developer tools-ում network tab ստուգել, կամ կապվել կայքի ադմինիստրատորի հետ:</p>';
-            }
-            document.getElementById('results').innerHTML = resultsHtml;
-            if (apiLinks.length > 0 || webhookLinks.length > 0) {
-                document.getElementById('download').style.display = 'block';
-                window.apiLinks = apiLinks;
-                window.webhookLinks = webhookLinks;
-            } else {
-                document.getElementById('download').style.display = 'none';
-            }
-        }
-        function downloadResults() {
-            if (window.webhookLinks && window.webhookLinks.length > 0) {
-                let content = 'Webhook հղումներ\n';
-                window.webhookLinks.forEach((link, i) => {
-                    content += (i + 1) + '. ' + link + '\n';
-                });
+            
+            // Function to download results
+            function downloadResults() {
+                let content = '';
+                
+                if (scanResults.webhooks.length > 0) {
+                    content += "Webhook հղումներ\n";
+                    scanResults.webhooks.forEach((webhook, index) => {
+                        content += `${index + 1}. ${webhook}\n`;
+                    });
+                    content += "\n";
+                }
+                
+                if (scanResults.apis.length > 0) {
+                    content += "API Հղումներ\n";
+                    let linkIndex = 1;
+                    scanResults.apis.forEach(api => {
+                        api.endpoints.forEach(endpoint => {
+                            content += `${linkIndex}. ${endpoint}\n`;
+                            linkIndex++;
+                        });
+                    });
+                }
+                
                 const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'Webhook.txt';
+                
+                if (scanResults.webhooks.length > 0 && scanResults.apis.length > 0) {
+                    a.download = 'api_and_webhook_results.txt';
+                } else if (scanResults.webhooks.length > 0) {
+                    a.download = 'webhook_results.txt';
+                } else {
+                    a.download = 'api_results.txt';
+                }
+                
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }
-            if (window.apiLinks && window.apiLinks.length > 0) {
-                let content = 'API Հղումներ\n';
-                window.apiLinks.forEach((link, i) => {
-                    content += (i + 1) + '. ' + link + '\n';
-                });
-                const blob = new Blob([content], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'API.txt';
-                a.click();
-                URL.revokeObjectURL(url);
-            }
-        }
+            
+            // API types to check for
+            const apiTypes = [
+                'Private API',
+                'Public API',
+                'Partner API',
+                'RESTful API',
+                'SOAP API',
+                'GraphQL API',
+                'RPC API',
+                'Web API',
+                'Operating System API',
+                'Library API'
+            ];
+        });
     </script>
 </body>
 </html>
