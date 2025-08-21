@@ -1,468 +1,242 @@
 <!DOCTYPE html>
 <html lang="hy">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>API & Webhook Հայտնաբերում</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f6f9;
-      color: #333;
-      line-height: 1.6;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 20px auto;
-      padding: 20px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    h1 {
-      font-size: 2rem;
-      color: #2c3e50;
-    }
-
-    .url-input-section {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    @media (min-width: 768px) {
-      .url-input-section {
-        flex-direction: row;
-        align-items: center;
-      }
-    }
-
-    input[type="text"] {
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-      flex: 1;
-    }
-
-    button {
-      padding: 12px 20px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    button:disabled {
-      background-color: #95a5a6;
-      cursor: not-allowed;
-    }
-
-    .security-status {
-      margin: 15px 0;
-      font-weight: bold;
-    }
-
-    .http {
-      color: #e74c3c;
-    }
-
-    .https {
-      color: #27ae60;
-    }
-
-    .scan-results {
-      margin-top: 30px;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .result-item {
-      margin: 15px 0;
-      font-size: 16px;
-    }
-
-    .status {
-      font-weight: bold;
-      margin-left: 10px;
-    }
-
-    .success {
-      color: #27ae60;
-    }
-
-    .failure {
-      color: #e74c3c;
-    }
-
-    .links-list {
-      margin: 10px 0 0 20px;
-      font-size: 14px;
-      color: #555;
-    }
-
-    .copy-btn {
-      margin-left: 10px;
-      padding: 5px 10px;
-      font-size: 12px;
-      background: #9b59b6;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .copy-btn:hover {
-      background: #8e44ad;
-    }
-
-    .download-btn {
-      margin-top: 20px;
-      display: none;
-    }
-
-    .manual-suggestions {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f9f9f9;
-      border-left: 4px solid #f39c12;
-      font-size: 14px;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 50px;
-      color: #7f8c8d;
-      font-size: 14px;
-    }
-
-    .loader {
-      display: none;
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #3498db;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 10px;
-      }
-      h1 {
-        font-size: 1.5rem;
-      }
-      input[type="text"], button {
-        padding: 10px;
-        font-size: 14px;
-      }
-      .result-item {
-        font-size: 15px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API և Webhook Հայտնաբերիչ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results, #security {
+            margin-bottom: 20px;
+        }
+        .found-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .copy-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+        /* Responsive design */
+        @media (max-width: 600px) { /* Mobile */
+            .container { padding: 10px; }
+            h1 { font-size: 24px; }
+        }
+        @media (min-width: 601px) and (max-width: 768px) { /* Tablet */
+            .container { padding: 15px; }
+            h1 { font-size: 28px; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) { /* Laptop */
+            .container { max-width: 900px; }
+        }
+        @media (min-width: 1025px) and (max-width: 1440px) { /* Notebook/PC */
+            .container { max-width: 1100px; }
+        }
+        @media (min-width: 1441px) { /* TV and large screens */
+            .container { max-width: 1400px; }
+            h1 { font-size: 36px; }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>API & Webhook Հայտնաբերում</h1>
-      <p>Մուտքագրեք կայքի URL-ը և սկանավորեք API-ներ և Webhook-եր</p>
-    </header>
-
-    <div class="url-input-section">
-      <input type="text" id="websiteUrl" placeholder="Օրինակ՝ example.com" />
-      <button id="scanBtn">Սկանավորել</button>
+    <div class="container">
+        <h1>API և Webhook Հայտնաբերիչ</h1>
+        <input type="text" id="url" placeholder="Մուտքագրեք կայքի URL (օրինակ՝ example.com)">
+        <button onclick="scanSite()">Սկանավորել</button>
+        <div id="security"></div>
+        <div id="results"></div>
+        <button id="download" style="display: none;" onclick="downloadResults()">Ներբեռնել Արդյունքները</button>
     </div>
+    <script>
+        let foundAPIs = [];
+        let foundWebhooks = [];
+        const proxy = 'https://corsproxy.io/?';
 
-    <div class="security-status" id="securityStatus"></div>
-
-    <div class="loader" id="loader"></div>
-
-    <div class="scan-results" id="results" style="display: none;">
-      <h2>Սկանավորման արդյունքներ</h2>
-
-      <div class="result-item">
-        1. Private API: <span class="status" id="privateApi">⏳ սպասեք...</span>
-        <div class="links-list" id="privateApiLinks"></div>
-      </div>
-      <div class="result-item">
-        2. Public API: <span class="status" id="publicApi">⏳ սպասեք...</span>
-        <div class="links-list" id="publicApiLinks"></div>
-      </div>
-      <div class="result-item">
-        3. Partner API: <span class="status" id="partnerApi">⏳ սպասեք...</span>
-        <div class="links-list" id="partnerApiLinks"></div>
-      </div>
-      <div class="result-item">
-        4. RESTful API: <span class="status" id="restfulApi">⏳ սպասեք...</span>
-        <div class="links-list" id="restfulApiLinks"></div>
-      </div>
-      <div class="result-item">
-        5. SOAP API: <span class="status" id="soapApi">⏳ սպասեք...</span>
-        <div class="links-list" id="soapApiLinks"></div>
-      </div>
-      <div class="result-item">
-        6. GraphQL API: <span class="status" id="graphqlApi">⏳ սպասեք...</span>
-        <div class="links-list" id="graphqlApiLinks"></div>
-      </div>
-      <div class="result-item">
-        7. RPC API: <span class="status" id="rpcApi">⏳ սպասեք...</span>
-        <div class="links-list" id="rpcApiLinks"></div>
-      </div>
-      <div class="result-item">
-        8. Web API: <span class="status" id="webApi">⏳ սպասեք...</span>
-        <div class="links-list" id="webApiLinks"></div>
-      </div>
-      <div class="result-item">
-        9. Operating System API: <span class="status" id="osApi">⏳ սպասեք...</span>
-        <div class="links-list" id="osApiLinks"></div>
-      </div>
-      <div class="result-item">
-        10. Library API: <span class="status" id="libraryApi">⏳ սպասեք...</span>
-        <div class="links-list" id="libraryApiLinks"></div>
-      </div>
-
-      <div class="result-item">
-        Webhook-եր: <span class="status" id="webhooks">⏳ սպասեք...</span>
-        <div class="links-list" id="webhookLinks"></div>
-      </div>
-
-      <button id="downloadBtn" class="download-btn">Ներբեռնել Արդյունքները</button>
-
-      <div class="manual-suggestions" id="manualSuggestions" style="display: none;">
-        <strong>Ուշադրություն:</strong> Հայտնաբերված չէ։ Խորհուրդ ենք տալիս ձեռքով ստուգել հետևյալ հնարավոր հղումները՝
-        <ul>
-          <li>/api</li>
-          <li>/webhook</li>
-          <li>/hooks</li>
-          <li>/v1/api</li>
-          <li>/graphql</li>
-          <li>/rest</li>
-        </ul>
-      </div>
-    </div>
-
-    <footer>
-      &copy; 2025 API & Webhook Scanner | Բոլոր իրավունքները պաշտպանված են
-    </footer>
-  </div>
-
-  <script>
-    const scanBtn = document.getElementById("scanBtn");
-    const urlInput = document.getElementById("websiteUrl");
-    const securityStatus = document.getElementById("securityStatus");
-    const loader = document.getElementById("loader");
-    const results = document.getElementById("results");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const manualSuggestions = document.getElementById("manualSuggestions");
-
-    // Կարգավորել արդյունքների դաշտերը
-    const resultFields = {
-      privateApi: { status: document.getElementById("privateApi"), links: document.getElementById("privateApiLinks") },
-      publicApi: { status: document.getElementById("publicApi"), links: document.getElementById("publicApiLinks") },
-      partnerApi: { status: document.getElementById("partnerApi"), links: document.getElementById("partnerApiLinks") },
-      restfulApi: { status: document.getElementById("restfulApi"), links: document.getElementById("restfulApiLinks") },
-      soapApi: { status: document.getElementById("soapApi"), links: document.getElementById("soapApiLinks") },
-      graphqlApi: { status: document.getElementById("graphqlApi"), links: document.getElementById("graphqlApiLinks") },
-      rpcApi: { status: document.getElementById("rpcApi"), links: document.getElementById("rpcApiLinks") },
-      webApi: { status: document.getElementById("webApi"), links: document.getElementById("webApiLinks") },
-      osApi: { status: document.getElementById("osApi"), links: document.getElementById("osApiLinks") },
-      libraryApi: { status: document.getElementById("libraryApi"), links: document.getElementById("libraryApiLinks") },
-      webhooks: { status: document.getElementById("webhooks"), links: document.getElementById("webhookLinks") },
-    };
-
-    // CORS Proxy (անվտանգ է միայն սկանավորման համար)
-    const corsProxy = "https://api.allorigins.win/get?url=";
-
-    // Հայտնի հղումներ
-    const apiPaths = ["/api", "/api/v1", "/api/v2", "/rest", "/graphql", "/webhook", "/webhooks", "/hooks", "/rpc", "/soap", "/os-api", "/lib-api"];
-    const detectedLinks = {
-      apis: [],
-      webhooks: []
-    };
-
-    scanBtn.addEventListener("click", async () => {
-      const rawUrl = urlInput.value.trim();
-      if (!rawUrl) {
-        alert("Խնդրում ենք մուտքագրել կայքի URL-ը");
-        return;
-      }
-
-      let domain = rawUrl;
-      if (rawUrl.startsWith("http://")) {
-        domain = rawUrl.replace("http://", "");
-      } else if (rawUrl.startsWith("https://")) {
-        domain = rawUrl.replace("https://", "");
-      }
-
-      let httpUrl = `http://${domain}`;
-      let httpsUrl = `https://${domain}`;
-      let fullUrl = "";
-
-      // Ստուգել առաջինը HTTPS-ով
-      try {
-        await fetch(corsProxy + encodeURIComponent(httpsUrl), { method: "GET" });
-        fullUrl = httpsUrl;
-      } catch {
-        try {
-          await fetch(corsProxy + encodeURIComponent(httpUrl), { method: "GET" });
-          fullUrl = httpUrl;
-        } catch {
-          alert("Չհաջողվեց կապվել կայքի հետ։ Ստուգեք URL-ը։");
-          return;
-        }
-      }
-
-      // Ցուցադրել անվտանգություն
-      if (fullUrl.startsWith("https://")) {
-        securityStatus.innerHTML = `Կայքը՝ <span class="https">https://</span> - Անվտանգ է`;
-      } else {
-        securityStatus.innerHTML = `Կայքը՝ <span class="http">http://</span> - Վտանգավոր է`;
-      }
-
-      // Լույսեր
-      loader.style.display = "block";
-      results.style.display = "block";
-      downloadBtn.style.display = "none";
-      manualSuggestions.style.display = "none";
-
-      // Մաքրել նախորդ արդյունքները
-      Object.keys(resultFields).forEach(key => {
-        resultFields[key].status.textContent = "⏳ սկանավորվում է...";
-        resultFields[key].status.className = "";
-        resultFields[key].links.innerHTML = "";
-      });
-      detectedLinks.apis = [];
-      detectedLinks.webhooks = [];
-
-      // Սկանավորել հայտնի հղումները
-      for (const path of apiPaths) {
-        const testUrl = fullUrl + path;
-        try {
-          const response = await fetch(corsProxy + encodeURIComponent(testUrl));
-          if (response.ok) {
-            const data = await response.json();
-            // Ստուգել, որ էջը գոյություն ունի
-            if (data.contents && data.contents.length > 100) {
-              if (path.includes("webhook") || path.includes("hooks")) {
-                detectedLinks.webhooks.push(testUrl);
-              } else {
-                detectedLinks.apis.push(testUrl);
-              }
+        async function checkEndpoint(fullUrl, type) {
+            try {
+                const response = await fetch(proxy + encodeURIComponent(fullUrl), { method: 'HEAD' });
+                if (response.status >= 200 && response.status < 400) {
+                    if (type === 'Webhook') {
+                        foundWebhooks.push(fullUrl);
+                    } else {
+                        foundAPIs.push(fullUrl);
+                    }
+                    return { found: true, status: response.status };
+                } else if (response.status === 401 || response.status === 403) {
+                    // Assume private if auth required
+                    foundAPIs.push(fullUrl + ' (Private)');
+                    return { found: true, private: true };
+                }
+            } catch (error) {
+                console.error('Սխալ հարցման ժամանակ:', error);
             }
-          }
-        } catch (e) {
-          // Անտեսել սխալները
+            return { found: false };
         }
-      }
 
-      // Թարմացնել UI-ն
-      setTimeout(() => {
-        loader.style.display = "none";
+        async function scanSite() {
+            let url = document.getElementById('url').value.trim();
+            if (!url) return alert('Մուտքագրեք URL');
 
-        const hasApi = detectedLinks.apis.length > 0;
-        const hasWebhook = detectedLinks.webhooks.length > 0;
-
-        // Թարմացնել ամեն մի տեսակ
-        Object.keys(resultFields).forEach(key => {
-          const field = resultFields[key];
-          if (key === "webhooks") {
-            field.status.textContent = hasWebhook ? "✅ Առկա է" : "❌ Առկա չէ";
-            field.status.className = hasWebhook ? "success" : "failure";
-            if (hasWebhook) {
-              detectedLinks.webhooks.forEach(url => {
-                const div = document.createElement("div");
-                div.textContent = url;
-                const btn = document.createElement("button");
-                btn.textContent = "Պատճենել";
-                btn.className = "copy-btn";
-                btn.onclick = () => navigator.clipboard.writeText(url).then(() => alert("Պատճենված է!"));
-                div.appendChild(btn);
-                field.links.appendChild(div);
-              });
+            // Ավտոմատ ավելացնել protocol, default https
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
             }
-          } else {
-            field.status.textContent = hasApi ? "✅ Առկա է" : "❌ Առկա չէ";
-            field.status.className = hasApi ? "success" : "failure";
-            if (hasApi) {
-              detectedLinks.apis.forEach(url => {
-                const div = document.createElement("div");
-                div.textContent = url;
-                const btn = document.createElement("button");
-                btn.textContent = "Պատճենել";
-                btn.className = "copy-btn";
-                btn.onclick = () => navigator.clipboard.writeText(url).then(() => alert("Պատճենված է!"));
-                div.appendChild(btn);
-                field.links.appendChild(div);
-              });
-            }
-          }
-        });
 
-        // Ցուցադրել ներբեռնման կոճակը, եթե կա հայտնաբերում
-        if (hasApi || hasWebhook) {
-          downloadBtn.style.display = "block";
-        } else {
-          manualSuggestions.style.display = "block";
+            const protocol = url.startsWith('https') ? 'https://' : 'http://';
+            const color = protocol === 'https://' ? 'green' : 'red';
+            const status = protocol === 'https://' ? 'Անվտանգ է' : 'Վտանգավոր է';
+            document.getElementById('security').innerHTML = `<p style="color: ${color}; font-weight: bold;">${protocol} - ${status}</p><p>https://-ով կայքերն անվտանգ են, http://-ով կայքերը վտանգավոր են:</p>`;
+
+            foundAPIs = [];
+            foundWebhooks = [];
+            document.getElementById('results').innerHTML = '<p>Սկանավորումը ընթացքի մեջ է...</p>';
+
+            // Ընդհանուր endpoints տեսակների համար
+            const endpoints = {
+                'Private API': ['/private/api', '/api/private'],
+                'Public API': ['/api', '/public/api', '/v1/api'],
+                'Partner API': ['/partner/api'],
+                'RESTful API': ['/rest/api', '/api'], // Կստուգենք methods հետո
+                'SOAP API': ['/soap', '/wsdl'],
+                'GraphQL API': ['/graphql'],
+                'RPC API': ['/rpc'],
+                'Web API': ['/webapi'],
+                'Operating System API': ['/osapi'],
+                'Library API': ['/libapi'],
+                'Private Webhook': ['/private/webhook'],
+                'Public Webhook': ['/webhook', '/hooks', '/callback'],
+                'Test API': ['/test/api', '/api/test'],
+                'Test Webhook': ['/test/webhook']
+            };
+
+            const promises = [];
+            let resultsHtml = '';
+            let hasAny = false;
+
+            for (const [type, paths] of Object.entries(endpoints)) {
+                let foundForType = false;
+                for (const path of paths) {
+                    const result = await checkEndpoint(url + path, type.includes('Webhook') ? 'Webhook' : 'API');
+                    if (result.found) {
+                        foundForType = true;
+                        hasAny = true;
+                    }
+                }
+                const symbol = foundForType ? '✅ Առկա է' : '❌ Առկա չէ';
+                resultsHtml += `<p><strong>${type}:</strong> ${symbol}</p>`;
+            }
+
+            document.getElementById('results').innerHTML = resultsHtml;
+
+            // Ցուցադրել found links with copy
+            if (foundAPIs.length > 0) {
+                document.getElementById('results').innerHTML += '<h3>Հայտնաբերված API հղումներ</h3>';
+                foundAPIs.forEach(link => {
+                    document.getElementById('results').innerHTML += `<div class="found-item">${link} <button class="copy-btn" onclick="copyToClipboard('${link}')">Պատճենել</button></div>`;
+                });
+            }
+            if (foundWebhooks.length > 0) {
+                document.getElementById('results').innerHTML += '<h3>Հայտնաբերված Webhook հղումներ</h3>';
+                foundWebhooks.forEach(link => {
+                    document.getElementById('results').innerHTML += `<div class="found-item">${link} <button class="copy-btn" onclick="copyToClipboard('${link}')">Պատճենել</button></div>`;
+                });
+            }
+
+            if (!hasAny) {
+                document.getElementById('results').innerHTML += '<p>Ոչինչ չի հայտնաբերվել: Առաջարկվում է manual տարբերակներ՝ փնտրեք կայքի փաստաթղթերում, օգտագործեք developer tools (F12) կամ փորձեք հղումներ ինքներդ:</p>';
+            }
+
+            // Ցուցադրել download button
+            document.getElementById('download').style.display = 'block';
         }
-      }, 1000);
-    });
 
-    // Ներբեռնել արդյունքները
-    downloadBtn.addEventListener("click", () => {
-      let content = "Webhook հղումներ\n";
-      if (detectedLinks.webhooks.length > 0) {
-        detectedLinks.webhooks.forEach((url, i) => {
-          content += `${i+1}. ${url}\n`;
-        });
-      } else {
-        content += "Ոչ մի հայտնաբերված Webhook\n";
-      }
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Պատճենված է: ' + text);
+            }).catch(err => {
+                alert('Սխալ պատճենման ժամանակ: ' + err);
+            });
+        }
 
-      content += "\nAPI Հղումներ\n";
-      if (detectedLinks.apis.length > 0) {
-        detectedLinks.apis.forEach((url, i) => {
-          content += `${i+1}. ${url}\n`;
-        });
-      } else {
-        content += "Ոչ մի հայտնաբերված API\n";
-      }
+        function downloadResults() {
+            let apiText = 'API Հղումներ\n';
+            foundAPIs.forEach((link, index) => {
+                apiText += `${index + 1}. ${link}\n`;
+            });
 
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "API_Webhook.txt";
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-  </script>
+            let webhookText = 'Webhook հղումներ\n';
+            foundWebhooks.forEach((link, index) => {
+                webhookText += `${index + 1}. ${link}\n`;
+            });
+
+            // Ներբեռնել API.txt
+            if (foundAPIs.length > 0) {
+                const apiBlob = new Blob([apiText], { type: 'text/plain' });
+                const apiUrl = URL.createObjectURL(apiBlob);
+                const aApi = document.createElement('a');
+                aApi.href = apiUrl;
+                aApi.download = 'API.txt';
+                aApi.click();
+                URL.revokeObjectURL(apiUrl);
+            }
+
+            // Ներբեռնել Webhook.txt
+            if (foundWebhooks.length > 0) {
+                const webhookBlob = new Blob([webhookText], { type: 'text/plain' });
+                const webhookUrl = URL.createObjectURL(webhookBlob);
+                const aWebhook = document.createElement('a');
+                aWebhook.href = webhookUrl;
+                aWebhook.download = 'Webhook.txt';
+                aWebhook.click();
+                URL.revokeObjectURL(webhookUrl);
+            }
+
+            if (foundAPIs.length === 0 && foundWebhooks.length === 0) {
+                alert('Ոչինչ չի հայտնաբերվել ներբեռնելու համար');
+            }
+        }
+    </script>
 </body>
 </html>
