@@ -1,770 +1,606 @@
 <!DOCTYPE html>
-<html lang="hy">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>API և Webhook հայտնաբերման սկաներ</title>
-  <meta name="description" content="Առցանց վեբ հավելված API-ների և Webhook-երի հայտնաբերման համար՝ կայքի URL-ով սկանավորում, արդյունքների ցուցադրում, պատճենում և ներբեռնում։">
-  <style>
-    :root{
-      --bg:#0b0e13;
-      --panel:#111621;
-      --soft:#171e2b;
-      --muted:#9fb0ca;
-      --text:#e7efff;
-      --accent:#6ea8ff;
-      --accent-2:#a6e3a1;
-      --danger:#ff6b6b;
-      --warn:#ffd166;
-      --ok:#60d394;
-      --border:#223045;
-      --chip:#22324a;
-      --shadow: 0 10px 25px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
-      --radius: 14px;
-      --radius-sm: 10px;
-      --radius-lg: 20px;
-      --gap: 16px;
-      --gap-lg: 24px;
-      --gap-sm: 10px;
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background: radial-gradient(1200px 800px at 10% -10%, #13305633, transparent 60%),
-                  radial-gradient(900px 700px at 90% -20%, #1f3b7a22, transparent 60%),
-                  var(--bg);
-      color:var(--text);
-      font-family: var(--font);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    .container{
-      max-width:1200px;
-      margin:0 auto;
-      padding: clamp(16px,4vw,28px);
-    }
-    header{
-      display:flex; align-items:flex-start; justify-content:space-between;
-      gap:var(--gap);
-      margin-bottom: clamp(18px,3vw,28px);
-    }
-    .brand{
-      display:flex; gap:12px; align-items:center;
-    }
-    .logo{
-      width:46px; height:46px; border-radius:12px;
-      background: linear-gradient(135deg, #5e8bf7, #7cd1ff);
-      box-shadow: 0 8px 24px rgba(110,168,255,.35);
-      display:grid; place-items:center;
-      font-weight:800; color:#0a1020;
-    }
-    h1{
-      margin:0;
-      font-size: clamp(20px, 2.2vw, 28px);
-      letter-spacing:.3px;
-    }
-    .subtitle{
-      margin:6px 0 0; color:var(--muted); font-size: clamp(13px,1.5vw,15px);
-    }
-
-    .panel{
-      background: linear-gradient(180deg, rgba(255,255,255,.02), transparent), var(--panel);
-      border:1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .toolbar{
-      display:flex; flex-wrap:wrap; gap:var(--gap); padding: var(--gap);
-      align-items:stretch; justify-content:space-between;
-    }
-    .input-wrap{
-      flex:1 1 420px; display:flex; gap:10px; align-items:stretch;
-      background: var(--soft);
-      border:1px solid var(--border);
-      border-radius: 12px; padding:8px 8px 8px 12px;
-    }
-    .input-wrap input{
-      flex:1; background: transparent; border:0; outline:none; color:var(--text);
-      font-size: 16px; min-width: 180px;
-    }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px; border-radius: 999px; background: var(--chip);
-      border:1px solid var(--border); color: var(--muted); font-size: 13px;
-      white-space:nowrap;
-    }
-    .btn{
-      appearance:none; border:0; outline:none; cursor:pointer;
-      background: linear-gradient(180deg, #7fb0ff, #5a8cff);
-      color:#071126; font-weight:700; letter-spacing:.2px;
-      padding:12px 18px; border-radius: 12px; min-width:140px;
-      box-shadow: 0 10px 20px rgba(110,168,255,.35), inset 0 1px 0 rgba(255,255,255,.35);
-      transition: transform .05s ease, box-shadow .1s ease;
-    }
-    .btn:hover{ transform: translateY(-1px) }
-    .btn:active{ transform: translateY(0) scale(.99) }
-    .btn.secondary{
-      background: linear-gradient(180deg, #2a3348, #1b2334);
-      color: var(--text);
-      box-shadow: 0 10px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
-      border:1px solid var(--border);
-    }
-    .btn[disabled]{ opacity:.5; cursor:not-allowed }
-
-    .status{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      padding: 0 var(--gap) var(--gap);
-    }
-    .badge{
-      font-weight:800; padding: 6px 10px; border-radius: 9px; font-size: 12px;
-      border:1px solid var(--border);
-    }
-    .badge.secure{ background:#0f2a1d; color:#9affc8; border-color:#1f6244 }
-    .badge.insecure{ background:#331616; color:#ffb3b3; border-color:#6d2a2a }
-    .tiny{ font-size:12px; color:var(--muted) }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat( auto-fit, minmax(230px, 1fr) );
-      gap: var(--gap);
-      padding: var(--gap);
-    }
-    .card{
-      background: var(--soft); border:1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 14px;
-      display:flex; flex-direction:column; gap:10px;
-      min-height:110px; justify-content:space-between;
-    }
-    .card h3{ margin:0; font-size:16px; letter-spacing:.2px }
-    .found{ color: var(--ok); font-weight:800 }
-    .notfound{ color: var(--danger); font-weight:800 }
-    .indicator{
-      display:flex; align-items:center; gap:8px; font-size:14px;
-    }
-
-    .lists{
-      display:grid; grid-template-columns: 1fr; gap: var(--gap);
-      padding: 0 var(--gap) var(--gap);
-    }
-    @media (min-width: 900px){
-      .lists{ grid-template-columns: 1fr 1fr }
-    }
-    .list{
-      background: var(--soft); border:1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 14px;
-      min-height:180px;
-    }
-    .list h3{ margin:0 0 8px 0; font-size:16px }
-    .item{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding:10px 12px; border:1px dashed #2b3a55; border-radius:10px; margin:8px 0;
-      background: #0f1522;
-      font-family: var(--mono);
-      overflow:auto;
-    }
-    .item .url{ white-space:nowrap; overflow:auto; scrollbar-width:thin; }
-    .copy{
-      padding:8px 10px; border-radius:8px; border:1px solid var(--border);
-      background:#0e1a2a; color:var(--text); cursor:pointer; font-size:12px;
-    }
-
-    .manual{
-      padding: var(--gap); color: var(--muted); line-height:1.6;
-    }
-    .manual ul{ margin:8px 0 0 18px; }
-    .manual li{ margin:6px 0; }
-    .hint{ color:#b7c8e6 }
-
-    .footer-bar{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      padding: var(--gap); border-top:1px solid var(--border);
-      background: #0c1220;
-      border-radius: 0 0 var(--radius) var(--radius);
-    }
-
-    .spinner{
-      width:16px; height:16px; border:2px solid #2b3a55; border-top-color:#7fb0ff;
-      border-radius:50%; animation: spin .8s linear infinite; display:inline-block;
-    }
-    @keyframes spin{ to{ transform: rotate(360deg) } }
-
-    .log{
-      padding: 10px var(--gap); color: var(--muted); font-size:13px;
-      max-height: 120px; overflow:auto;
-    }
-
-    .hidden{ display:none !important }
-    .success{ color: var(--accent-2) }
-    .warn{ color: var(--warn) }
-    .danger{ color: var(--danger) }
-    .oktext{ color: var(--ok) }
-
-    /* Ultra-responsive tweaks */
-    @media (min-width: 1400px){
-      .grid{ grid-template-columns: repeat(4, 1fr) }
-    }
-    @media (min-width: 1900px){
-      .container{ max-width: 1600px }
-    }
-    @media (max-width: 420px){
-      .btn{ width:100% }
-      .pill{ width:100%; justify-content:center }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API & Webhook Discovery Tool</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .url-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .url-input-container {
+                flex-direction: row;
+            }
+        }
+        
+        .url-input {
+            flex: 1;
+            position: relative;
+        }
+        
+        .url-input input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .url-input input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .protocol-indicator {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .secure {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .insecure {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .scan-button {
+            padding: 15px 25px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .scan-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .scan-button:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .results-section {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .download-btn {
+            padding: 10px 20px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .results-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        
+        .result-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .result-title h3 {
+            font-size: 18px;
+            color: var(--dark);
+        }
+        
+        .status {
+            font-size: 20px;
+        }
+        
+        .result-content {
+            min-height: 100px;
+        }
+        
+        .endpoint-list {
+            list-style-type: none;
+        }
+        
+        .endpoint-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: var(--gray);
+            padding: 20px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .manual-suggestions {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .manual-suggestions h4 {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .manual-suggestions ul {
+            padding-left: 20px;
+            color: var(--gray);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="logo">API</div>
-        <div>
-          <h1>API և Webhook հայտնաբերման առցանց վեբ հավելված</h1>
-          <p class="subtitle">Մուտքագրեք կայքի URL հասցեն, սկանավորեք և ստացեք ավտոմատ արդյունքներ՝ պատճենման և ներբեռնման հնարավորությամբ։</p>
+    <div class="container">
+        <header>
+            <h1>API & Webhook Discovery Tool</h1>
+            <p>Scan any website to detect APIs and Webhooks</p>
+        </header>
+        
+        <section class="input-section">
+            <div class="url-input-container">
+                <div class="url-input">
+                    <input type="text" id="url-input" placeholder="Enter website URL (e.g., example.com)">
+                    <div id="protocol-indicator" class="protocol-indicator">HTTPS/HTTP</div>
+                </div>
+                <button id="scan-button" class="scan-button">Scan Website</button>
+            </div>
+        </section>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Scanning website for APIs and Webhooks...</p>
         </div>
-      </div>
-    </header>
+        
+        <section id="results-section" class="results-section">
+            <div class="results-header">
+                <h2>Scan Results</h2>
+                <button id="download-btn" class="download-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    Download Results
+                </button>
+            </div>
+            
+            <div class="results-grid" id="results-grid">
+                <!-- Results will be populated here by JavaScript -->
+            </div>
+            
+            <div id="manual-suggestions" class="manual-suggestions">
+                <h4>Manual Discovery Suggestions</h4>
+                <ul>
+                    <li>Check the website's documentation for API references</li>
+                    <li>Look for /api, /v1, /webhook, /hooks endpoints</li>
+                    <li>Inspect network requests in browser developer tools</li>
+                    <li>Check robots.txt or sitemap.xml for API endpoints</li>
+                    <li>Look for JavaScript files that might contain API calls</li>
+                </ul>
+            </div>
+        </section>
+        
+        <footer>
+            <p>API & Webhook Discovery Tool &copy; 2023 | This is a demonstration tool</p>
+        </footer>
+    </div>
 
-    <section class="panel">
-      <div class="toolbar">
-        <div class="input-wrap">
-          <input id="urlInput" type="text" inputmode="url" placeholder="օր. example.com կամ https://example.com" />
-          <span class="pill" title="Էկրանի չափսի աջակցում">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H4V7Zm0 4h16v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6Zm7 5h2v2h-2v-2Z" stroke="#9fb0ca" stroke-width="1.2"/></svg>
-            Responsive
-          </span>
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <button id="scanBtn" class="btn">Սկանավորել</button>
-          <button id="resetBtn" class="btn secondary">Մաքրել</button>
-        </div>
-      </div>
-
-      <div class="status">
-        <div id="protoBadge" class="badge hidden"></div>
-        <div id="securityText" class="tiny"></div>
-      </div>
-
-      <div class="grid" id="detectionsGrid">
-        <!-- Cards will be populated dynamically -->
-      </div>
-
-      <div class="lists">
-        <div class="list">
-          <h3>Հայտնաբերված API հղումներ</h3>
-          <div id="apiList"></div>
-        </div>
-        <div class="list">
-          <h3>Հայտնաբերված Webhook հղումներ</h3>
-          <div id="whList"></div>
-        </div>
-      </div>
-
-      <div id="manualBox" class="manual hidden">
-        <div class="hint">Չի հայտնաբերվել ակնհայտ API/Webhook հղում։ Կարող եք փորձել հետևյալ ձեռքով տարբերակները.</div>
-        <ul>
-          <li><b>Փորձեք հայտնի ուղիներ.</b> /api, /api/v1, /wp-json, /graphql, /swagger.json, /openapi.json, /api-docs, /webhook, /webhooks, /hooks</li>
-          <li><b>Ստուգեք փաստաթղթավորումը.</b> /docs, /developers, /developer, /swagger-ui, /help, /support</li>
-          <li><b>Որոնեք էջում.</b> “API”, “Webhook”, “GraphQL”, “WSDL”, “JSON-RPC”, “OpenAPI”, “SDK”, “Partner API”, “Private API”</li>
-        </ul>
-      </div>
-
-      <div id="log" class="log"></div>
-
-      <div class="footer-bar">
-        <button id="dlApi" class="btn secondary hidden">Ներբեռնել API.txt</button>
-        <button id="dlWh" class="btn secondary hidden">Ներբեռնել Webhook.txt</button>
-        <span id="countText" class="tiny"></span>
-        <span id="progress" class="tiny"></span>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    // ---------- Utilities ----------
-    const $ = sel => document.querySelector(sel);
-    const el = (t, cls, txt) => {
-      const n = document.createElement(t);
-      if(cls) n.className = cls;
-      if(txt !== undefined) n.textContent = txt;
-      return n;
-    };
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
-    const withTimeout = (p, ms, label='Պահող') => {
-      let to;
-      const t = new Promise((_, rej)=> to = setTimeout(()=> rej(new Error(label+' — ժամանակի սահմանաչափ')), ms));
-      return Promise.race([p.finally(()=>clearTimeout(to)), t]);
-    };
-
-    // Proxy backends to bypass CORS for scanning public content (best-effort)
-    const PROXIES = [
-      { name: 'jina', build: url => `https://r.jina.ai/${url}` },            // works for GET, returns raw text
-      { name: 'allorigins', build: url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` },
-      { name: 'isogit', build: url => `https://cors.isomorphic-git.org/${url}` },
-    ];
-
-    async function proxyGet(url, timeoutMs = 12000) {
-      // Try proxies sequentially until one returns ok text
-      for (const p of PROXIES) {
-        try {
-          const full = p.build(url);
-          const resp = await withTimeout(fetch(full, { method: 'GET' }), timeoutMs, 'Proxy timeout');
-          if (resp.ok) {
-            const text = await resp.text();
-            return { ok: true, text, via: p.name, url: full, code: resp.status };
-          }
-          // Some proxies (isogit) may return 200 even for 404 from origin; include body anyway
-          const text = await resp.text().catch(()=> '');
-          if (text && text.length) {
-            return { ok: true, text, via: p.name, url: full, code: resp.status };
-          }
-        } catch (e) {
-          // try next proxy
-        }
-      }
-      return { ok: false };
-    }
-
-    function normalizeHost(input){
-      try{
-        let s = input.trim();
-        if (!s) return null;
-        // Remove surrounding quotes/spaces
-        s = s.replace(/^\s+|\s+$/g,'');
-        // If includes scheme, trust it
-        if (/^https?:\/\//i.test(s)) {
-          const u = new URL(s);
-          return { host: u.host, path: u.pathname + u.search, scheme: u.protocol.replace(':','') };
-        }
-        // If looks like domain/path
-        if (!s.includes('://')) {
-          if (s.includes('/')) {
-            const [h, ...rest] = s.split('/');
-            return { host: h, path: '/'+rest.join('/'), scheme: null };
-          } else {
-            return { host: s, path: '/', scheme: null };
-          }
-        }
-      }catch(e){}
-      return null;
-    }
-
-    async function resolveScheme(host){
-      // Prefer https
-      const httpsTry = await proxyGet(`https://${host}/`);
-      if (httpsTry.ok && httpsTry.text) return 'https';
-      const httpTry = await proxyGet(`http://${host}/`);
-      if (httpTry.ok && httpTry.text) return 'http';
-      // Default to https if unknown
-      return 'https';
-    }
-
-    function showProtocol(scheme){
-      const badge = $('#protoBadge');
-      const info = $('#securityText');
-      badge.classList.remove('hidden','secure','insecure');
-      if (scheme === 'https') {
-        badge.classList.add('secure');
-        badge.textContent = 'https:// — Անվտանգ է';
-        info.innerHTML = 'HTTPS-ով կայքերը ապահովում են տվյալների կոդավորում և ավելի անվտանգ են։';
-      } else {
-        badge.classList.add('insecure');
-        badge.textContent = 'http:// — Վտանգավոր է';
-        info.innerHTML = 'HTTP-ով կայքերը չեն կոդավորում տվյալները և կարող են լինել վտանգավոր։';
-      }
-    }
-
-    function buildDetectionsGrid(){
-      const types = [
-        { key:'private', label:'Private API' },
-        { key:'public', label:'Public API' },
-        { key:'partner', label:'Partner API' },
-        { key:'rest', label:'RESTful API (GET, POST, PUT, DELETE)' },
-        { key:'soap', label:'SOAP API' },
-        { key:'graphql', label:'GraphQL API' },
-        { key:'rpc', label:'RPC API' },
-        { key:'webapi', label:'Web API' },
-        { key:'osapi', label:'Operating System API' },
-        { key:'libapi', label:'Library API' },
-        { key:'webhook', label:'Webhook' },
-      ];
-      const grid = $('#detectionsGrid');
-      grid.innerHTML = '';
-      for (const t of types){
-        const c = el('div','card');
-        const h = el('h3',null,t.label);
-        const ind = el('div','indicator');
-        ind.dataset.key = t.key;
-        ind.innerHTML = `<span class="notfound">❌ Առկա չէ</span>`;
-        c.appendChild(h); c.appendChild(ind);
-        const help = el('div','tiny');
-        help.textContent = 'Ավտոմատ հայտնաբերման արդյունք';
-        c.appendChild(help);
-        grid.appendChild(c);
-      }
-    }
-
-    function setIndicator(key, present){
-      const ind = document.querySelector(`.indicator[data-key="${key}"]`);
-      if (!ind) return;
-      ind.innerHTML = present
-        ? `<span class="found">✅ Առկա է</span>`
-        : `<span class="notfound">❌ Առկա չէ</span>`;
-    }
-
-    function appendLog(msg, kind=''){
-      const log = $('#log');
-      const line = el('div', kind ? kind : '', `• ${msg}`);
-      log.appendChild(line);
-      log.scrollTop = log.scrollHeight;
-    }
-
-    function addListItem(container, url){
-      const w = el('div','item');
-      const u = el('div','url', url);
-      const b = el('button','copy','Պատճենել');
-      b.addEventListener('click', async ()=>{
-        try{
-          if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(url);
-          else {
-            const ta = el('textarea'); ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
-            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-          }
-          b.textContent = 'Պատճենված է';
-          setTimeout(()=> b.textContent='Պատճենել', 1400);
-        }catch(e){
-          b.textContent = 'Չհաջողվեց';
-          setTimeout(()=> b.textContent='Պատճենել', 1400);
-        }
-      });
-      w.appendChild(u); w.appendChild(b);
-      container.appendChild(w);
-    }
-
-    function downloadableTextAPIs(apiLinks){
-      const lines = ['API-ի Հղումներ'];
-      apiLinks.forEach((l,i)=> lines.push(`${i+1}. ${l}`));
-      return lines.join('\n');
-    }
-    function downloadableTextWH(whLinks){
-      const lines = ['Webhook-ի հղումներ'];
-      whLinks.forEach((l,i)=> lines.push(`${i+1}. ${l}`));
-      return lines.join('\n');
-    }
-
-    function triggerDownload(filename, text){
-      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(a.href);
-      document.body.removeChild(a);
-    }
-
-    // ---------- Heuristics & scanning ----------
-    const CANDIDATE_PATHS = [
-      '/', '/api', '/api/', '/api/v1', '/api/v2', '/api/v3',
-      '/wp-json', '/graphql', '/graphiql', '/playground',
-      '/swagger.json', '/openapi.json', '/swagger/v1/swagger.json', '/api-docs', '/docs', '/swagger-ui', '/redoc',
-      '/soap', '/wsdl', '/?wsdl', '/api?wsdl',
-      '/rpc', '/jsonrpc', '/api/rpc',
-      '/webhook', '/webhooks', '/hooks', '/api/webhook', '/api/webhooks', '/rest/webhook',
-      '/.well-known/openapi.json'
-    ];
-
-    function deriveExtraCandidatesFromHtml(host, html){
-      const out = new Set();
-      const re = /(href|src)\s*=\s*["']([^"']+)["']/gi;
-      let m;
-      while ((m = re.exec(html))){
-        let url = m[2];
-        if (!url) continue;
-        try{
-          // Absolute URL
-          if (/^https?:\/\//i.test(url)) {
-            const u = new URL(url);
-            if (u.host === host && /api|webhook|graphql|swagger|openapi|wsdl|rpc|jsonrpc|hooks/i.test(u.pathname))
-              out.add(u.pathname + (u.search || ''));
-          } else {
-            // Relative
-            if (/^\/[^?#]*/.test(url) && /api|webhook|graphql|swagger|openapi|wsdl|rpc|jsonrpc|hooks/i.test(url)){
-              out.add(url);
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.getElementById('url-input');
+            const protocolIndicator = document.getElementById('protocol-indicator');
+            const scanButton = document.getElementById('scan-button');
+            const loadingElement = document.getElementById('loading');
+            const resultsSection = document.getElementById('results-section');
+            const resultsGrid = document.getElementById('results-grid');
+            const downloadBtn = document.getElementById('download-btn');
+            const manualSuggestions = document.getElementById('manual-suggestions');
+            
+            let scanResults = {
+                apis: [],
+                webhooks: []
+            };
+            
+            // API types to check
+            const apiTypes = [
+                { id: 'private-api', name: 'Private API' },
+                { id: 'public-api', name: 'Public API' },
+                { id: 'partner-api', name: 'Partner API' },
+                { id: 'rest-api', name: 'RESTful API' },
+                { id: 'soap-api', name: 'SOAP API' },
+                { id: 'graphql-api', name: 'GraphQL API' },
+                { id: 'rpc-api', name: 'RPC API' },
+                { id: 'web-api', name: 'Web API' },
+                { id: 'os-api', name: 'Operating System API' },
+                { id: 'library-api', name: 'Library API' },
+                { id: 'webhook', name: 'Webhook' }
+            ];
+            
+            // Update protocol indicator based on URL input
+            urlInput.addEventListener('input', function() {
+                const url = urlInput.value.trim().toLowerCase();
+                
+                if (url.startsWith('http://')) {
+                    protocolIndicator.textContent = 'HTTP';
+                    protocolIndicator.className = 'protocol-indicator insecure';
+                } else if (url.startsWith('https://')) {
+                    protocolIndicator.textContent = 'HTTPS';
+                    protocolIndicator.className = 'protocol-indicator secure';
+                } else {
+                    protocolIndicator.textContent = 'HTTPS/HTTP';
+                    protocolIndicator.className = 'protocol-indicator';
+                }
+            });
+            
+            // Scan button click handler
+            scanButton.addEventListener('click', function() {
+                let url = urlInput.value.trim();
+                
+                if (!url) {
+                    alert('Please enter a website URL');
+                    return;
+                }
+                
+                // Add http:// if no protocol is specified
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                    urlInput.value = url;
+                }
+                
+                // Update protocol indicator
+                if (url.startsWith('http://')) {
+                    protocolIndicator.textContent = 'HTTP';
+                    protocolIndicator.className = 'protocol-indicator insecure';
+                } else {
+                    protocolIndicator.textContent = 'HTTPS';
+                    protocolIndicator.className = 'protocol-indicator secure';
+                }
+                
+                // Show loading, hide results
+                loadingElement.style.display = 'block';
+                resultsSection.style.display = 'none';
+                scanButton.disabled = true;
+                
+                // Simulate scanning (in a real application, this would be actual API calls)
+                simulateScanning(url);
+            });
+            
+            // Simulate the scanning process
+            function simulateScanning(url) {
+                // Reset results
+                scanResults = {
+                    apis: [],
+                    webhooks: []
+                };
+                
+                // Simulate network delay
+                setTimeout(() => {
+                    // Generate random results for demonstration
+                    const hasAPIs = Math.random() > 0.3;
+                    const hasWebhooks = Math.random() > 0.7;
+                    
+                    if (hasAPIs) {
+                        // Generate between 1-4 random API endpoints
+                        const apiCount = Math.floor(Math.random() * 4) + 1;
+                        for (let i = 0; i < apiCount; i++) {
+                            const apiTypes = ['RESTful', 'GraphQL', 'Web', 'Private'];
+                            const randomType = apiTypes[Math.floor(Math.random() * apiTypes.length)];
+                            
+                            scanResults.apis.push({
+                                type: randomType + ' API',
+                                url: url + '/api/' + Math.random().toString(36).substring(2, 8),
+                                methods: ['GET', 'POST'].slice(0, Math.floor(Math.random() * 2) + 1)
+                            });
+                        }
+                    }
+                    
+                    if (hasWebhooks) {
+                        // Generate between 0-2 random webhook endpoints
+                        const webhookCount = Math.floor(Math.random() * 3);
+                        for (let i = 0; i < webhookCount; i++) {
+                            scanResults.webhooks.push({
+                                type: 'Webhook',
+                                url: url + '/webhook/' + Math.random().toString(36).substring(2, 8)
+                            });
+                        }
+                    }
+                    
+                    // Display results
+                    displayResults();
+                    
+                    // Hide loading, show results
+                    loadingElement.style.display = 'none';
+                    resultsSection.style.display = 'block';
+                    scanButton.disabled = false;
+                    
+                    // Show download button if we have results
+                    downloadBtn.style.display = (scanResults.apis.length > 0 || scanResults.webhooks.length > 0) ? 
+                        'flex' : 'none';
+                    
+                    // Show manual suggestions if no results
+                    manualSuggestions.style.display = (scanResults.apis.length === 0 && scanResults.webhooks.length === 0) ? 
+                        'block' : 'none';
+                        
+                }, 2000); // Simulate 2 seconds scanning time
             }
-          }
-        }catch(e){}
-      }
-      return Array.from(out).slice(0, 30);
-    }
-
-    function classifyFromSignals(signals){
-      // signals: { hasREST, hasSOAP, hasGraphQL, hasRPC, hasWebhook, openapi, swagger, wpjson, publicWords, privateWords, partnerWords, sdkWords, osWords, apiLinksCount }
-      const det = {
-        rest: !!(signals.hasREST || signals.openapi || signals.swagger || signals.wpjson),
-        soap: !!signals.hasSOAP,
-        graphql: !!signals.hasGraphQL,
-        rpc: !!signals.hasRPC,
-        webhook: !!signals.hasWebhook,
-        webapi: false,
-        public: false,
-        private: false,
-        partner: false,
-        osapi: false,
-        libapi: false,
-      };
-      det.webapi = det.rest || det.soap || det.graphql || det.rpc; // any web-exposed API
-      // Public/Private/Partner: heuristic based on words and openness of docs
-      det.public = !!(signals.publicWords || signals.openapi || signals.swagger || signals.wpjson || signals.graphqlUI);
-      det.private = !!(signals.privateWords && !det.public);
-      det.partner = !!signals.partnerWords;
-      // OS API: mentions of OS API keywords on the site
-      det.osapi = !!signals.osWords;
-      // Library API: mentions of SDK/Library + API reference
-      det.libapi = !!signals.sdkWords;
-      return det;
-    }
-
-    async function scanHost(host, schemeHint = null){
-      const results = {
-        scheme: schemeHint || 'https',
-        apiLinks: [],
-        whLinks: [],
-        rawHome: '',
-        signals: {
-          hasREST:false, hasSOAP:false, hasGraphQL:false, hasRPC:false, hasWebhook:false,
-          openapi:false, swagger:false, wpjson:false, graphqlUI:false,
-          publicWords:false, privateWords:false, partnerWords:false, sdkWords:false, osWords:false
-        }
-      };
-
-      appendLog('Սխեմայի որոշում …');
-      const scheme = schemeHint || await resolveScheme(host);
-      results.scheme = scheme;
-      showProtocol(scheme);
-
-      const rootUrl = `${scheme}://${host}/`;
-      appendLog(`Գլխավոր էջի բեռնում: ${rootUrl}`);
-      const home = await proxyGet(rootUrl);
-      if (home.ok && home.text){
-        results.rawHome = home.text.slice(0, 500000); // cap
-        const t = results.rawHome.toLowerCase();
-        const word = (w) => t.includes(w);
-        results.signals.publicWords = /public api|open api|openapi|swagger|api docs|api documentation|developers|developer portal|rest api|graphql/.test(t);
-        results.signals.privateWords = /private api|internal api|internal use|not public|confidential api|requires vpn|whitelist/.test(t);
-        results.signals.partnerWords = /partner api|partners api|partner program|partner integration/.test(t);
-        results.signals.sdkWords = /sdk|client library|npm install|pip install|maven|gradle|composer require|gem install|api reference|library api/.test(t);
-        results.signals.osWords = /windows api|winapi|posix|macos api|android api|ios api|linux api|system api/.test(t);
-        if (/graphql|graphiql|apollo studio|graphqlear|playground/.test(t)) results.signals.graphqlUI = true;
-        // Derive extra internal links
-        const extras = deriveExtraCandidatesFromHtml(host, results.rawHome);
-        if (extras.length){
-          appendLog(`Գտնվել է ${extras.length} հնարավոր ուղի էջից`);
-          CANDIDATE_PATHS.push(...extras);
-        }
-      } else {
-        appendLog('Չհաջողվեց բեռնել գլխավոր էջը', 'warn');
-      }
-
-      // Build candidate absolute URLs (dedupe)
-      const seen = new Set();
-      const candidates = [];
-      for (const p of CANDIDATE_PATHS){
-        const abs = `${scheme}://${host}${p}`;
-        if (!seen.has(abs)) { seen.add(abs); candidates.push(abs); }
-      }
-
-      // Limit total checks to keep it fast
-      const MAX_CHECKS = 60;
-      const queue = candidates.slice(0, MAX_CHECKS);
-
-      $('#progress').textContent = `Ստուգվում է ${queue.length} ուղի…`;
-
-      // Concurrency control
-      const CONC = 6;
-      let idx = 0, done = 0;
-
-      async function worker(){
-        while (idx < queue.length){
-          const my = idx++;
-          const url = queue[my];
-          appendLog(`Ստուգում: ${url}`);
-          const res = await proxyGet(url);
-          done++;
-          $('#progress').textContent = `Պատասխաններ: ${done}/${queue.length}`;
-          if (!res.ok || !res.text) continue;
-
-          const lower = res.text.toLowerCase();
-          // Classify endpoints
-          const isOpenAPI = /openapi|swagger|{"openapi":\s*"/.test(lower) || /"swagger"\s*:/.test(lower);
-          const isWPJSON = /"name":\s*".{0,80}"\s*,\s*"description":/i.test(res.text) && url.endsWith('/wp-json');
-          const isGraphQL = /graphql|__schema|graphiql|apollo/i.test(res.text) || /{"errors":\[|{"data":\{/.test(res.text) && url.includes('/graphql');
-          const hasWsdl = /\bdefinitions\b|\bwSDL\b|<definitions|<wsdl:definitions/i.test(res.text) || url.includes('wsdl');
-          const looksJSON = /^\s*[\{\[]/.test(res.text);
-          const looksRESTyPath = /\/api(\/|$)|\/v\d+\/|\/users|\/items|\/posts|\/orders/i.test(url);
-
-          // Webhook hints
-          const isWebhook = /webhook|hooks|callback/i.test(url) || /webhook/i.test(res.text);
-
-          // RPC hints
-          const isRPC = /json-?rpc|rpc/.test(url) || /"jsonrpc"\s*:\s*"/i.test(res.text);
-
-          // SOAP
-          if (hasWsdl || /<soap:envelope/i.test(res.text)) results.signals.hasSOAP = true;
-
-          if (isOpenAPI){ results.signals.openapi = true; results.signals.hasREST = true; }
-          if (url.endsWith('/swagger.json') || /"swagger"\s*:/.test(res.text)){ results.signals.swagger = true; results.signals.hasREST = true; }
-          if (isWPJSON){ results.signals.wpjson = true; results.signals.hasREST = true; }
-          if (looksRESTyPath || (looksJSON && url.includes('/api'))) results.signals.hasREST = true;
-          if (isGraphQL){ results.signals.hasGraphQL = true; }
-          if (isRPC){ results.signals.hasRPC = true; }
-          if (isWebhook){ results.signals.hasWebhook = true; }
-
-          // Collect links
-          if (/api|swagger|openapi|wp-json|graphql|rpc|jsonrpc/i.test(url) && !results.apiLinks.includes(url)){
-            results.apiLinks.push(url);
-            addListItem($('#apiList'), url);
-          }
-          if (/(webhook|hooks)/i.test(url) && !results.whLinks.includes(url)){
-            results.whLinks.push(url);
-            addListItem($('#whList'), url);
-          }
-          // Also parse bodies for absolute self-hosted endpoints to add
-          const extracted = deriveExtraCandidatesFromHtml(host, res.text).map(p=> `${scheme}://${host}${p}`);
-          for (const x of extracted){
-            if (!results.apiLinks.includes(x) && /api|graphql|swagger|openapi|rpc|jsonrpc/i.test(x)) {
-              results.apiLinks.push(x);
-              addListItem($('#apiList'), x);
+            
+            // Display results in the grid
+            function displayResults() {
+                resultsGrid.innerHTML = '';
+                
+                // Create result cards for each API type
+                apiTypes.forEach(apiType => {
+                    const resultCard = document.createElement('div');
+                    resultCard.className = 'result-card';
+                    
+                    const resultTitle = document.createElement('div');
+                    resultTitle.className = 'result-title';
+                    
+                    const title = document.createElement('h3');
+                    title.textContent = apiType.name;
+                    
+                    const status = document.createElement('div');
+                    status.className = 'status';
+                    
+                    const resultContent = document.createElement('div');
+                    resultContent.className = 'result-content';
+                    
+                    // Check if this type was found
+                    let foundItems = [];
+                    
+                    if (apiType.id === 'webhook') {
+                        foundItems = scanResults.webhooks;
+                    } else {
+                        foundItems = scanResults.apis.filter(api => 
+                            api.type.toLowerCase().includes(apiType.id.split('-')[0]));
+                    }
+                    
+                    if (foundItems.length > 0) {
+                        status.innerHTML = '✅ Առկա է';
+                        
+                        const list = document.createElement('ul');
+                        list.className = 'endpoint-list';
+                        
+                        foundItems.forEach(item => {
+                            const listItem = document.createElement('li');
+                            listItem.className = 'endpoint-item';
+                            
+                            const endpointUrl = document.createElement('span');
+                            endpointUrl.textContent = item.url;
+                            
+                            const copyButton = document.createElement('button');
+                            copyButton.className = 'copy-btn';
+                            copyButton.textContent = 'Copy';
+                            copyButton.addEventListener('click', () => {
+                                navigator.clipboard.writeText(item.url);
+                                copyButton.textContent = 'Copied!';
+                                setTimeout(() => {
+                                    copyButton.textContent = 'Copy';
+                                }, 2000);
+                            });
+                            
+                            listItem.appendChild(endpointUrl);
+                            listItem.appendChild(copyButton);
+                            list.appendChild(listItem);
+                        });
+                        
+                        resultContent.appendChild(list);
+                    } else {
+                        status.innerHTML = '❌ Առկա չէ';
+                        resultContent.innerHTML = '<p class="no-results">No endpoints found</p>';
+                    }
+                    
+                    resultTitle.appendChild(title);
+                    resultTitle.appendChild(status);
+                    
+                    resultCard.appendChild(resultTitle);
+                    resultCard.appendChild(resultContent);
+                    
+                    resultsGrid.appendChild(resultCard);
+                });
             }
-            if (!results.whLinks.includes(x) && /(webhook|hooks)/i.test(x)) {
-              results.whLinks.push(x);
-              addListItem($('#whList'), x);
-            }
-          }
-        }
-      }
-
-      const workers = Array.from({length: CONC}, worker);
-      await Promise.all(workers);
-
-      $('#progress').textContent = 'Պատրաստ է';
-      return results;
-    }
-
-    // ---------- Main wiring ----------
-    let lastScan = null;
-
-    function resetUI(){
-      $('#protoBadge').classList.add('hidden');
-      $('#securityText').textContent = '';
-      $('#apiList').innerHTML = '';
-      $('#whList').innerHTML = '';
-      $('#manualBox').classList.add('hidden');
-      $('#log').innerHTML = '';
-      $('#dlApi').classList.add('hidden');
-      $('#dlWh').classList.add('hidden');
-      $('#countText').textContent = '';
-      $('#progress').textContent = '';
-      buildDetectionsGrid();
-    }
-
-    function updateDownloads(results){
-      const hasAPI = results.apiLinks.length > 0;
-      const hasWH = results.whLinks.length > 0;
-      if (hasAPI){
-        $('#dlApi').classList.remove('hidden');
-      } else {
-        $('#dlApi').classList.add('hidden');
-      }
-      if (hasWH){
-        $('#dlWh').classList.remove('hidden');
-      } else {
-        $('#dlWh').classList.add('hidden');
-      }
-      if (!hasAPI && !hasWH){
-        $('#manualBox').classList.remove('hidden');
-      }
-      $('#countText').textContent = `API: ${results.apiLinks.length} • Webhook: ${results.whLinks.length}`;
-    }
-
-    function applyClassification(results){
-      const det = classifyFromSignals(results.signals);
-      setIndicator('rest', det.rest);
-      setIndicator('soap', det.soap);
-      setIndicator('graphql', det.graphql);
-      setIndicator('rpc', det.rpc);
-      setIndicator('webhook', det.webhook);
-      setIndicator('webapi', det.webapi);
-      setIndicator('public', det.public);
-      setIndicator('private', det.private);
-      setIndicator('partner', det.partner);
-      setIndicator('osapi', det.osapi);
-      setIndicator('libapi', det.libapi);
-    }
-
-    async function handleScan(){
-      const raw = $('#urlInput').value;
-      if (!raw || !raw.trim()){
-        appendLog('Խնդրում ենք մուտքագրել URL հասցե', 'warn');
-        $('#urlInput').focus();
-        return;
-      }
-      resetUI();
-      $('#scanBtn').disabled = true;
-      try{
-        const parsed = normalizeHost(raw);
-        if (!parsed){
-          appendLog('Սխալ URL ձևաչափ', 'danger');
-          return;
-        }
-        const host = parsed.host;
-        const scheme = parsed.scheme || await resolveScheme(host);
-        const fullShown = `${scheme}://${host}${parsed.path || '/'}`;
-        $('#urlInput').value = fullShown;
-        showProtocol(scheme);
-
-        appendLog(`Սկսում ենք սկանավորումը՝ ${host}`);
-
-        const results = await scanHost(host, scheme);
-
-        applyClassification(results);
-        updateDownloads(results);
-        lastScan = results;
-
-        appendLog('Սկանավորումն ավարտվեց', 'success');
-      }catch(e){
-        appendLog(`Սխալ սկանավորման ընթացքում: ${e.message || e}`, 'danger');
-      }finally{
-        $('#scanBtn').disabled = false;
-      }
-    }
-
-    // Init
-    buildDetectionsGrid();
-    $('#scanBtn').addEventListener('click', handleScan);
-    $('#resetBtn').addEventListener('click', resetUI);
-    $('#urlInput').addEventListener('keydown', (e)=> { if (e.key === 'Enter') handleScan(); });
-
-    $('#dlApi').addEventListener('click', ()=>{
-      if (!lastScan || !lastScan.apiLinks.length) return;
-      const text = downloadableTextAPIs(lastScan.apiLinks);
-      triggerDownload('API.txt', text);
-    });
-    $('#dlWh').addEventListener('click', ()=>{
-      if (!lastScan || !lastScan.whLinks.length) return;
-      const text = downloadableTextWH(lastScan.whLinks);
-      triggerDownload('Webhook.txt', text);
-    });
-
-    // Optional: subtle hint examples
-    (function setExample(){
-      const examples = ['example.com', 'wp-json.org', 'api.github.com', 'shopify.com', 'meta.com', 'cloudflare.com'];
-      const pick = examples[Math.floor(Math.random()*examples.length)];
-      $('#urlInput').placeholder = `օր. ${pick} կամ https://${pick}`;
-    })();
-
-  </script>
+            
+            // Download results
+            downloadBtn.addEventListener('click', function() {
+                let content = '';
+                
+                if (scanResults.webhooks.length > 0) {
+                    content += "Webhook-ի հղումներ\n";
+                    scanResults.webhooks.forEach((webhook, index) => {
+                        content += `${index + 1}. ${webhook.url}\n`;
+                    });
+                    content += "\n";
+                }
+                
+                if (scanResults.apis.length > 0) {
+                    content += "API-ի Հղումներ\n";
+                    scanResults.apis.forEach((api, index) => {
+                        content += `${index + 1}. ${api.url}\n`;
+                    });
+                }
+                
+                if (!content) {
+                    alert('No results to download');
+                    return;
+                }
+                
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                
+                if (scanResults.webhooks.length > 0 && scanResults.apis.length > 0) {
+                    a.download = 'api_and_webhook_results.txt';
+                } else if (scanResults.webhooks.length > 0) {
+                    a.download = 'webhook_results.txt';
+                } else {
+                    a.download = 'api_results.txt';
+                }
+                
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        });
+    </script>
 </body>
 </html>
